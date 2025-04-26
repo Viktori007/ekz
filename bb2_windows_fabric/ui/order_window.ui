@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>OrderWindow</class>
+ <widget class="QMainWindow" name="OrderWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Заказ окна</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="mainLayout">
+    <item>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="currentIndex">
+       <number>2</number>
+      </property>
+      <widget class="QWidget" name="pageMaterial">
+       <layout class="QVBoxLayout" name="materialLayout">
+        <item>
+         <widget class="QLabel" name="labelStep1">
+          <property name="text">
+           <string>Шаг 1: Выберите материал и производителя</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelMaterial">
+          <property name="text">
+           <string>Материал:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboMaterial"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelManufacturer">
+          <property name="text">
+           <string>Производитель:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboManufacturer"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelSashes">
+          <property name="text">
+           <string>Количество створок:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="spinSashes">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnNext1">
+          <property name="text">
+           <string>Далее</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="pageDimensions">
+       <layout class="QVBoxLayout" name="dimensionsLayout">
+        <item>
+         <widget class="QLabel" name="labelStep2">
+          <property name="text">
+           <string>Шаг 2: Укажите размеры окна (в см)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="dimensionsInput">
+          <item>
+           <widget class="QLabel" name="labelWidth">
+            <property name="text">
+             <string>Ширина:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="spinWidth"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelHeight">
+            <property name="text">
+             <string>Высота:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="spinHeight"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="navButtons1">
+          <item>
+           <widget class="QPushButton" name="btnBack2">
+            <property name="text">
+             <string>Назад</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnNext2">
+            <property name="text">
+             <string>Далее</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="pageAccessories">
+       <layout class="QVBoxLayout" name="accessoriesLayout">
+        <item>
+         <widget class="QLabel" name="labelStep3">
+          <property name="text">
+           <string>Шаг 3: Выберите дополнительные комплектующие</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTableView" name="tableView"/>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="navButtons2">
+          <item>
+           <widget class="QPushButton" name="btnBack3">
+            <property name="text">
+             <string>Назад</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnNext3">
+            <property name="text">
+             <string>Далее</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="pageParams">
+       <layout class="QVBoxLayout" name="paramsLayout">
+        <item>
+         <widget class="QLabel" name="labelStep4">
+          <property name="text">
+           <string>Шаг 4: Выберите дополнительные параметры</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListWidget" name="listParams"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelPrice">
+          <property name="text">
+           <string>Итоговая стоимость: 0 руб</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="navButtons3">
+          <item>
+           <widget class="QPushButton" name="btnBack4">
+            <property name="text">
+             <string>Назад</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnFinish">
+            <property name="text">
+             <string>Завершить заказ</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="btnBack">
+      <property name="text">
+       <string>Назад в меню</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
