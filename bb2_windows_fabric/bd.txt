@@ -1,0 +1,309 @@
+
+USE window_fabric;
+
+-- Таблица пользователей
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('client', 'manager') NOT NULL,
+    phone VARCHAR(20),
+    full_name VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица материалов окон
+CREATE TABLE window_materials (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    description TEXT,
+    price_per_sqm DECIMAL(10, 2) NOT NULL,
+    image_path VARCHAR(255)
+);
+
+-- Таблица производителей
+CREATE TABLE manufacturers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    country VARCHAR(50),
+    warranty_years INT
+);
+
+
+
+-- Таблица типов открывания
+CREATE TABLE opening_types (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    description TEXT,
+    price_modifier DECIMAL(5, 2) DEFAULT 1.0
+);
+
+CREATE TABLE categories_accessories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50)
+    );
+
+-- Таблица дополнительных комплектующих
+CREATE TABLE accessories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    image_path VARCHAR(255),
+    category_id int,
+    foreign key (category_id) references categories_accessories(id)
+);
+
+-- Таблица дополнительных параметров
+CREATE TABLE additional_params (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    description TEXT,
+    price_modifier DECIMAL(5, 2) NOT NULL
+);
+
+CREATE TABLE orders_status (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name varchar(40)
+    );
+
+
+-- Таблица заказов
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    client_id INT,
+    manager_id INT,
+    status_id int DEFAULT 0,
+    total_price DECIMAL(12, 2),
+    phone VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (client_id) REFERENCES users(id),
+    FOREIGN KEY (manager_id) REFERENCES users(id),
+    foreign key (status_id) references orders_status(id)
+);
+
+-- Таблица элементов заказа (окна)
+CREATE TABLE order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    material_id INT NOT NULL,
+    manufacturer_id INT NOT NULL,
+    width DECIMAL(5, 2) NOT NULL,
+    height DECIMAL(5, 2) NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    price DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (material_id) REFERENCES window_materials(id),
+    FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(id)
+);
+
+select order_id, window_materials.name,manufacturers.name, width, height, quantity, price 
+from order_items JOIN
+window_materials on window_materials.id = material_id
+join orders on `order_id` = orders.id
+JOIN manufacturers on manufacturers.id = `manufacturer_id`
+where orders.client_id = 1;
+
+-- Таблица створок окон
+CREATE TABLE window_sashes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_item_id INT NOT NULL,
+    position INT NOT NULL, -- порядковый номер створки
+    opening_type_id INT NOT NULL,
+    FOREIGN KEY (order_item_id) REFERENCES order_items(id),
+    FOREIGN KEY (opening_type_id) REFERENCES opening_types(id)
+);
+
+-- Связь заказов с дополнительными комплектующими
+CREATE TABLE order_accessories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    accessory_id INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (accessory_id) REFERENCES accessories(id)
+);
+
+-- Связь элементов заказа с дополнительными параметрами
+CREATE TABLE item_additional_params (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_item_id INT NOT NULL,
+    param_id INT NOT NULL,
+    FOREIGN KEY (order_item_id) REFERENCES order_items(id),
+    FOREIGN KEY (param_id) REFERENCES additional_params(id)
+);
+
+-- Таблица бригад для монтажа
+CREATE TABLE installation_teams (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    current_workload INT DEFAULT 0
+);
+
+-- Таблица доставки и монтажа
+CREATE TABLE deliveries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    team_id INT,
+    installation_date DATE,
+    time_slot VARCHAR(50),
+    address TEXT NOT NULL,
+    needs_installation BOOLEAN DEFAULT TRUE,
+    needs_lifting BOOLEAN DEFAULT FALSE,
+    has_elevator BOOLEAN DEFAULT FALSE,
+    lifting_cost DECIMAL(10, 2) DEFAULT 0,
+    delivery_cost DECIMAL(10, 2) DEFAULT 0,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (team_id) REFERENCES installation_teams(id)
+);
+
+
+USE window_fabric;
+
+-- Заполнение таблицы статусов заказов
+INSERT INTO orders_status (id, name) VALUES 
+(0, 'нет статуса'),
+(2, 'На согласовании'),
+(3, 'Выполняется'),
+(4, 'Монтаж'),
+(5, 'Выполнен');
+
+-- Заполнение таблицы категорий комплектующих
+INSERT INTO categories_accessories (name) VALUES 
+('Подоконник'),
+('Откосы'),
+('Отливы'),
+('Москитная сетка'),
+('Ручки');
+
+-- Заполнение таблицы пользователей
+INSERT INTO users (username, password_hash, role, phone, full_name) VALUES 
+('client1', SHA2('cl', 256), 'client', '+79161234567', 'Иванов Иван Иванович'),
+('client2', SHA2('clientpass2', 256), 'client', '+79162345678', 'Петрова Мария Сергеевна'),
+('manager1', SHA2('managerpass1', 256), 'manager', '+79163456789', 'Сидоров Алексей Петрович'),
+('manager2', SHA2('managerpass2', 256), 'manager', '+79164567890', 'Кузнецова Елена Владимировна');
+
+UPDATE `users` SET `password_hash` = SHA2('cl', 256) WHERE `users`.`id` = 1;
+UPDATE `users` SET `password_hash` = SHA2('ma', 256) WHERE `users`.`id` = 3;
+
+-- Заполнение таблицы материалов окон
+INSERT INTO window_materials (name, description, price_per_sqm) VALUES 
+('ПВХ белый', 'Стандартный белый пластиковый профиль', 3500.00),
+('ПВХ ламинированный', 'Пластиковый профиль с декоративным покрытием', 4500.00),
+('Дерево сосна', 'Профиль из натуральной сосны', 6000.00),
+('Дерево дуб', 'Профиль из натурального дуба', 8500.00),
+('Алюминий', 'Алюминиевый профиль', 5500.00);
+
+-- Заполнение таблицы производителей
+INSERT INTO manufacturers (name, country, warranty_years) VALUES 
+('Rehau', 'Германия', 10),
+('Veka', 'Германия', 8),
+('KBE', 'Германия', 7),
+('Proplex', 'Россия', 5),
+('Montblanc', 'Россия', 6);
+
+-- Заполнение таблицы типов открывания
+INSERT INTO opening_types (name, description, price_modifier) VALUES 
+('Глухая', 'Не открывается', 1.0),
+('Поворотная', 'Открывается внутрь', 1.1),
+('Поворотно-откидная', 'Открывается внутрь и откидывается', 1.2),
+('Раздвижная', 'Открывается сдвигом в сторону', 1.15),
+('Фрамуга', 'Верхняя откидная створка', 1.05);
+
+-- Заполнение таблицы дополнительных комплектующих
+INSERT INTO accessories (name, description, price, category_id) VALUES 
+('Подоконник ПВХ 300мм', 'Стандартный подоконник из ПВХ шириной 300мм', 2500.00, 1),
+('Подоконник деревянный 300мм', 'Деревянный подоконник шириной 300мм', 4500.00, 1),
+('Откосы ПВХ', 'Пластиковые откосы для окон', 1200.00, 2),
+('Откосы штукатурные', 'Откосы с отделкой штукатуркой', 1800.00, 2),
+('Отлив 150мм', 'Металлический отлив шириной 150мм', 800.00, 3),
+('Отлив 200мм', 'Металлический отлив шириной 200мм', 1000.00, 3),
+('Москитная сетка стандарт', 'Стандартная москитная сетка', 1500.00, 4),
+('Москитная сетка антипыль', 'Сетка с уменьшенными ячейками', 2200.00, 4),
+('Ручка белая', 'Стандартная белая ручка', 800.00, 5),
+('Ручка золотая', 'Декоративная золотая ручка', 1500.00, 5);
+
+-- Заполнение таблицы дополнительных параметров
+INSERT INTO additional_params (name, description, price_modifier) VALUES 
+('Шумоизоляция', 'Улучшенная шумоизоляция', 1.15),
+('Солнцезащита', 'Тонировка стекла', 1.1),
+('Теплосбережение', 'Энергосберегающее стекло', 1.2),
+('Ударопрочность', 'Закаленное стекло', 1.25),
+('Антивандальное', 'Многослойное стекло', 1.3);
+
+-- Заполнение таблицы бригад монтажа
+INSERT INTO installation_teams (name, phone, current_workload) VALUES 
+('Бригада №1', '+79165678901', 2),
+('Бригада №2', '+79166789012', 1),
+('Бригада №3', '+79167890123', 0),
+('Бригада №4', '+79168901234', 3);
+
+-- Заполнение таблицы заказов
+INSERT INTO orders (client_id, manager_id, status_id, total_price, phone) VALUES 
+(1, 3, 0, 24500.00, '+79161234567'),
+(2, NULL, 0, 18700.00, '+79162345678'),
+(1, 4, 2, 32000.00, '+79161234567'),
+(2, 3, 2, 41500.00, '+79162345678'),
+(1, 4, 3, 28600.00, '+79161234567'),
+(2, 3, 4, 19800.00, '+79162345678');
+
+-- Заполнение таблицы элементов заказа
+INSERT INTO order_items (order_id, material_id, manufacturer_id, width, height, quantity, price) VALUES 
+(1, 1, 1, 120.0, 150.0, 1, 6300.00),
+(1, 2, 2, 80.0, 120.0, 1, 4320.00),
+(2, 3, 5, 100.0, 140.0, 1, 8400.00),
+(3, 4, 3, 150.0, 180.0, 1, 22950.00),
+(4, 5, 4, 200.0, 120.0, 2, 26400.00),
+(5, 2, 2, 90.0, 130.0, 1, 5265.00),
+(6, 1, 1, 70.0, 110.0, 1, 2695.00);
+
+-- Заполнение таблицы створок окон
+INSERT INTO window_sashes (order_item_id, position, opening_type_id) VALUES 
+(1, 1, 1),
+(2, 1, 3),
+(2, 2, 3),
+(3, 1, 2),
+(4, 1, 3),
+(5, 1, 2),
+(5, 2, 2),
+(6, 1, 3),
+(7, 1, 1);
+
+-- Заполнение таблицы комплектующих заказов
+INSERT INTO order_accessories (order_id, accessory_id, quantity) VALUES 
+(1, 1, 1),
+(1, 3, 1),
+(1, 5, 1),
+(2, 2, 1),
+(2, 4, 1),
+(3, 1, 1),
+(3, 3, 1),
+(3, 7, 1),
+(4, 2, 2),
+(4, 4, 2),
+(5, 1, 1),
+(5, 5, 1),
+(6, 3, 1),
+(6, 10, 1);
+
+-- Заполнение таблицы дополнительных параметров элементов
+INSERT INTO item_additional_params (order_item_id, param_id) VALUES 
+(1, 3),
+(2, 1),
+(2, 2),
+(3, 3),
+(4, 1),
+(4, 3),
+(4, 5),
+(5, 4),
+(6, 2),
+(7, 1);
+
+-- Заполнение таблицы доставки и монтажа
+INSERT INTO deliveries (order_id, team_id, installation_date, time_slot, address, needs_installation, needs_lifting, has_elevator, lifting_cost, delivery_cost) VALUES 
+(5, 2, '2023-12-15', '10:00-14:00', 'ул. Ленина, д.10, кв.25', TRUE, FALSE, TRUE, 0, 0),
+(6, 1, '2023-12-10', '09:00-12:00', 'пр. Мира, д.45, кв.12', TRUE, TRUE, FALSE, 2000, 1500);
+
